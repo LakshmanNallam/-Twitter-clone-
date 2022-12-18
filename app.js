@@ -193,3 +193,23 @@ app.post("/login/", async (request, response) => {
     response.send("Invalid user");
   }
 });
+//api
+app.post("/register/", async (request, response) => {
+  const { username, password, gender, name } = request.body;
+  const sqlquery = `select * from user where username like '${username}';`;
+  const data = await db.get(sqlquery);
+  if (data === undefined) {
+    if (password.length >= 6) {
+      const hashedpassword = await bcrypt.hash(password, 10);
+      const sqlquery2 = `insert into user(username,password,name,gender) values('${username}','${hashedpassword}','${gender}','${name}');`;
+      await db.run(sqlquery2);
+      response.send("User created successfully");
+    } else {
+      response.send(400);
+      response.status("Password is too short");
+    }
+  } else {
+    response.status(400);
+    response.send("User already exists");
+  }
+});
